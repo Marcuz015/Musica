@@ -1,54 +1,50 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
-import { useTrackPlayerProgress } from 'expo-av';
+import { Audio } from 'expo-av'; // Importe Audio em vez de useTrackPlayerProgress
 
 const Play = ({ route }) => {
   const { item } = route.params;
   const [isPlaying, setIsPlaying] = useState(false);
-  const { position, duration } = useTrackPlayerProgress(1000);
+  const [sound, setSound] = useState(null); // Adicione um estado para o som
 
   useEffect(() => {
-    (async () => {
-      await TrackPlayer.setupPlayer();
-      await TrackPlayer.add({
-        id: item.id,
-        url: item.audioUrl,
-        title: item.title,
-        artist: 'Artista',
-        artwork: item.thumbnail,
-      });
-      await TrackPlayer.play();
+    const loadSound = async () => {
+      const { sound } = await Audio.Sound.createAsync({ uri: item.audioUrl });
+      setSound(sound);
       setIsPlaying(true);
-    })();
+      await sound.playAsync();
+    };
+
+    loadSound();
 
     return () => {
-      TrackPlayer.stop();
+      if (sound) {
+        sound.unloadAsync(); // Descarregue o som ao desmontar o componente
+      }
     };
   }, [item]);
 
   const togglePlayback = async () => {
     if (isPlaying) {
-      await TrackPlayer.pause();
+      await sound.pauseAsync();
     } else {
-      await TrackPlayer.play();
+      await sound.playAsync();
     }
     setIsPlaying(!isPlaying);
   };
 
   const skipBackward = async () => {
-    let newPosition = position - 5;
-    if (newPosition < 0) {
-      newPosition = 0;
+    if (sound) {
+      const newPosition = Math.max(0, await sound.getStatusAsync()).positionMillis - 5000; // Use getStatusAsync para obter a posição do som
+      await sound.setPositionAsync(Math.max(0, newPosition)); // Defina a nova posição do som
     }
-    await TrackPlayer.seekTo(newPosition);
   };
 
   const skipForward = async () => {
-    let newPosition = position + 5;
-    if (newPosition > duration) {
-      newPosition = duration;
+    if (sound) {
+      const newPosition = (await sound.getStatusAsync()).positionMillis + 5000;
+      await sound.setPositionAsync(Math.min((await sound.getStatusAsync()).durationMillis, newPosition));
     }
-    await TrackPlayer.seekTo(newPosition);
   };
 
   return (
@@ -78,13 +74,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center'
   },
   thumbnail: {
-    width: 200,
+    width: 300,
     height: 200,
-    borderRadius: 15
-  },
+    borderRadius: 15,
+    resizeMode: "contain", // Corrigido: deve estar dentro da mesma linha que as outras propriedades
+  },  
   title: {
     fontSize: 18,
     marginTop: 10,
+    textAlign: 'center'
   },
   controls: {
     flexDirection: 'row',
@@ -95,6 +93,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'blue',
     fontWeight: 'bold',
+    margin: 20
   },
 });
 

@@ -8,7 +8,6 @@ import Pesquisa from '../pages/Pesquisa';
 import PlayList from '../pages/PlayList';
 import Play from '../pages/Play';
 
-
 const Tab = createBottomTabNavigator();
 
 export default function Routes() {
