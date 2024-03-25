@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, Image, SafeAreaView, StyleSheet } from 'react-native';
-import {useNavigation} from '@react-navigation/native'
+import { useNavigation } from '@react-navigation/native';
 
+// Componente de barra de pesquisa
 const SearchBar = ({ onSearch }) => {
   const [query, setQuery] = useState('');
 
@@ -14,7 +15,7 @@ const SearchBar = ({ onSearch }) => {
   };
 
   return (
-    <View style={{alignItems: 'center', backgroundColor: '#fff'}}>
+    <View style={{ alignItems: 'center', backgroundColor: '#fff' }}>
       <TextInput
         style={{ height: 40, borderColor: 'gray', borderWidth: 1, marginBottom: 10, width: '80%', textAlign: 'center', borderRadius: 15 }}
         value={query}
@@ -22,17 +23,19 @@ const SearchBar = ({ onSearch }) => {
         placeholder="Buscar por Música"
       />
       <TouchableOpacity onPress={handleSubmit} title="Search" style={styles.btn}>
-        <Text style={{ textAlign: 'center'}}>Buscar</Text>
+        <Text style={{ textAlign: 'center' }}>Buscar</Text>
       </TouchableOpacity>
     </View>
   );
 };
 
+// Componente de resultados da busca
 const SearchResults = ({ results }) => {
   const navigation = useNavigation();
 
-  const handleItemPress = (item) => {
-    navigation.navigate('Play', { item });
+  // Função para lidar com o clique em um resultado da busca
+  const handleItemPress = (video) => {
+    navigation.navigate('Play', { item: video }); // Passando todos os detalhes do vídeo para a página Play
   };
 
   return (
@@ -49,6 +52,7 @@ const SearchResults = ({ results }) => {
   );
 };
 
+// Estilos
 const styles = StyleSheet.create({
   videoContainer: {
     flexDirection: 'row',
@@ -69,16 +73,18 @@ const styles = StyleSheet.create({
   videoTitle: {
     flex: 1,
   },
-  btn:{
-    backgroundColor:'#4CAF50',
+  btn: {
+    backgroundColor: '#4CAF50',
     width: '50%',
     borderRadius: 15,
   }
 });
 
-const App = () => {
+// Componente principal
+const Pesquisa = () => {
   const [results, setResults] = useState([]);
 
+  // Função para buscar vídeos no YouTube
   const searchYouTube = async (query) => {
     try {
       const response = await fetch(
@@ -107,4 +113,5 @@ const App = () => {
   );
 };
 
-export default App;
+// Exportação do componente principal
+export default Pesquisa;
